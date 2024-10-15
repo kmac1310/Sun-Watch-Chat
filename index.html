@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1440TIME Clock</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .clock {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background-color: #333;
+            position: relative;
+            overflow: hidden;
+        }
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: 50% 100%;
+            background-color: white;
+            width: 2px;
+            height: 45%;
+            transition: transform 0.05s linear;
+        }
+        .numbers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            color: white;
+        }
+        .number {
+            position: absolute;
+            width: 100%;
+            font-size: 14px;
+        }
+        .time-display {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 18px;
+        }
+        .minutes-left {
+            position: absolute;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 18px;
+        }
+        .sun-moon {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <div class="clock">
+        <div class="numbers"></div>
+        <div class="hand"></div>
+        <div class="time-display"></div>
+        <div class="minutes-left"></div>
+        <div class="sun-moon"></div>
+    </div>
+
+    <script>
+        (function() {
+            const clock = document.querySelector('.clock');
+            const hand = document.querySelector('.hand');
+            const timeDisplay = document.querySelector('.time-display');
+            const minutesLeftDisplay = document.querySelector('.minutes-left');
+            const sunMoon = document.querySelector('.sun-moon');
+            const numbers = document.querySelector('.numbers');
+
+            // Add numbers around the clock
+            const numberPositions = [1440, 1320, 1200, 1080, 960, 840, 720, 600, 480, 360, 240, 120];
+            numberPositions.forEach((num, index) => {
+                const element = document.createElement('div');
+                element.textContent = `${num} min`;
+                element.classList.add('number');
+                const angle = (index * 30 - 90) * (Math.PI / 180);
+                const x = Math.cos(angle) * 130 + 150;
+                const y = Math.sin(angle) * 130 + 150;
+                element.style.left = `${x - 15}px`;
+                element.style.top = `${y - 7}px`;
+                numbers.appendChild(element);
+            });
+
+            function updateClock() {
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const seconds = now.getSeconds();
+
+                // Update standard time display
+                timeDisplay.textContent = now.toLocaleTimeString();
+
+                // Calculate and update minutes left in the day (including seconds)
+                const totalSecondsInDay = 86400;
+                const totalSecondsElapsed = hours * 3600 + minutes * 60 + seconds;
+                const secondsLeft = totalSecondsInDay - totalSecondsElapsed;
+                const minutesLeft = secondsLeft / 60;
+                minutesLeftDisplay.textContent = `${minutesLeft.toFixed(2)} min left`;
+
+                // Update hand position (including seconds)
+                const totalMinutes = totalSecondsElapsed / 60;
+                const rotation = (totalMinutes / 1440) * 360;
+                hand.style.transform = `rotate(${rotation}deg)`;
+
+                // Update sun/moon position across the full day
+                const sunMoonAngle = (totalSecondsElapsed / totalSecondsInDay) * 360;
+                sunMoon.style.transform = `translateX(-50%) rotate(${sunMoonAngle}deg) translateY(-120px) rotate(-${sunMoonAngle}deg)`;
+
+                // Update sun/moon appearance
+                const isDaytime = hours >= 6 && hours < 18;
+                if (isDaytime) {
+                    sunMoon.style.backgroundColor = 'yellow';
+                    sunMoon.style.boxShadow = '0 0 10px yellow';
+                } else {
+                    sunMoon.style.backgroundColor = 'lightgray';
+                    sunMoon.style.boxShadow = '0 0 10px white';
+                }
+
+                // Request the next animation frame
+                requestAnimationFrame(updateClock);
+            }
+
+            // Start the clock
+            updateClock();
+        })();
+    </script>
+</body>
+</html>
